@@ -7,6 +7,8 @@ import json
 import time
 import streamlit as st
 import datetime
+import fitz
+import requests
 
 OLLAMA_MODEL = "llama3"
 SAVE_FILE = "saved_papers.json"
@@ -57,6 +59,70 @@ def rename_project_folder(old_name, new_name):
         os.rename(old_path, new_path)
         return True
     return False
+
+#==================== PDFs ====================#
+
+def get_pdf_path(paper, project):
+    folder = os.path.join("projects", project, "pdfs")
+    os.makedirs(folder, exist_ok=True)
+    return os.path.join(folder, f"{paper['id'].replace('/', '_')}.pdf")
+
+def get_cache_path(paper, project):
+    folder = os.path.join("projects", project, "cache")
+    os.makedirs(folder, exist_ok=True)
+    return os.path.join(folder, f"{paper['id'].replace('/', '_')}.json")
+
+def download_pdf(paper, project):
+    pdf_url = None
+
+    # 1. Try existing links (e.g., from arXiv metadata)
+    for link in paper.get("links", []):
+        if isinstance(link, dict) and link.get("type") == "application/pdf":
+            pdf_url = link["href"]
+            break
+
+    # 2. Try fallback: build PDF URL manually if it's an arXiv page
+    if "arxiv.org" in paper.get("link", ""):
+        arxiv_path = paper["link"].split("arxiv.org/abs/")[-1] 
+        pdf_url = f"https://arxiv.org/pdf/{arxiv_path}.pdf"
+
+    # 3. Try direct .pdf link if available
+    if not pdf_url and paper.get("link", "").endswith(".pdf"):
+        pdf_url = paper["link"]
+
+    if not pdf_url:
+        raise ValueError(f"PDF link not found for paper: {paper.get('title', 'Unknown')}")
+
+    # Download PDF to local project path
+    pdf_path = get_pdf_path(paper, project)
+    if not os.path.exists(pdf_path):
+        r = requests.get(pdf_url)
+        if r.status_code == 200:
+            with open(pdf_path, "wb") as f:
+                f.write(r.content)
+        else:
+            raise ValueError(f"Failed to fetch PDF from {pdf_url}")
+
+    return pdf_path
+
+
+def extract_and_cache_pdf_text(paper, project):
+    cache_path = get_cache_path(paper, project)
+    if os.path.exists(cache_path):
+        with open(cache_path, "r") as f:
+            return json.load(f)
+
+    pdf_path = download_pdf(paper, project)
+    doc = fitz.open(pdf_path)
+
+    text_by_page = {}
+    for i, page in enumerate(doc):
+        text_by_page[str(i + 1)] = page.get_text()
+
+    with open(cache_path, "w") as f:
+        json.dump(text_by_page, f)
+
+    return text_by_page
 
 
 #==================== Paper ====================#

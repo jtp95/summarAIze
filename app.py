@@ -4,6 +4,17 @@ from summarizer import *
 from components import *
 from suggester import *
 import os
+import sys
+import types
+import torch
+
+# Patch to avoid torch.classes introspection error with Streamlit
+if not hasattr(torch, "classes"):
+    torch.classes = types.SimpleNamespace()
+setattr(torch.classes, "__path__", [])
+
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # === Session Setup ===
 if "selected_paper" not in st.session_state:
@@ -12,8 +23,13 @@ if "selected_paper" not in st.session_state:
 if "generating_summaries" not in st.session_state:
     st.session_state.generating_summaries = set()
 
-if "current_project" not in st.session_state:
+if "project_selected" not in st.session_state:
+    st.session_state.project_selected = False
+
+if not st.session_state.project_selected:
     st.session_state.current_project = None
+    st.session_state.papers = []
+
 
 if "project_selected" not in st.session_state:
     st.session_state.project_selected = False
@@ -80,8 +96,11 @@ if not st.session_state.project_selected:
     st.subheader("Delete Existing Project")
     with st.form("delete_project_form"):
         to_delete = st.selectbox("Select project to delete", options=project_list)
-        confirm = st.checkbox(f"Yes, delete '{to_delete}' permanently")
-        delete = st.form_submit_button("Delete")
+        col1, col2 = st.columns([6,1])
+        with col1:
+            confirm = st.checkbox(f"Yes, delete permanently")
+        with col2:
+            delete = st.form_submit_button("Delete")
         if delete and confirm:
             import shutil
             shutil.rmtree(get_project_path(to_delete))
@@ -119,11 +138,8 @@ if st.session_state.project_selected and st.session_state.current_project:
         st.markdown(f"[View on arXiv]({paper['link']})")
         
         st.divider()
-        st.subheader("Citation (APA)")
+        st.markdown("**Citation (APA)**")
         st.code(generate_apa_citation(paper), language="markdown")
-
-        st.divider()
-        st.markdown("Citation Number")
         new_id = st.number_input(
             "Edit citation ID",
             min_value=1,
@@ -153,7 +169,13 @@ if st.session_state.project_selected and st.session_state.current_project:
         st.markdown(f"## Project: {st.session_state.current_project}")
     with col2:
         st.markdown("<div style='margin-top: 0.5rem'></div>", unsafe_allow_html=True)
-        st.button("Exit", on_click=lambda: st.session_state.update({"project_selected": None}))
+        st.button("Exit", on_click=lambda: st.session_state.update({
+            "project_selected": False,
+            "current_project": None,
+            "papers": [],
+            "selected_paper": None
+        }))
+        
     config = load_project_config(st.session_state.current_project)
 
     with st.expander("Project Info", expanded=False):
@@ -180,7 +202,7 @@ if st.session_state.project_selected and st.session_state.current_project:
                     save_project_config(st.session_state.current_project, config)
                     st.success("Project info updated.")
     
-    tab_paper, tab_find, tab_add = st.tabs(["Papers", "Find", "Add"])
+    tab_paper, tab_find, tab_add, tab_search = st.tabs(["Papers", "Find", "Add", "Search"])
 
     with tab_add:
         render_tab_add()
@@ -196,7 +218,10 @@ if st.session_state.project_selected and st.session_state.current_project:
             
         detect_citation_gaps(st.session_state.papers)
         render_tab_paper()
-
+        
+    with tab_search:
+        render_tab_search()
+        
     for paper in st.session_state.papers:
         pid = paper["id"]
         if pid in st.session_state.generating_summaries:

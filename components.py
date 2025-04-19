@@ -2,6 +2,7 @@ import streamlit as st
 from utils import *
 from suggester import generate_live_suggestions
 from summarizer import load_summary_cache
+from searcher import search_with_semantic_filter
 import hashlib
 
 #==================== Summary ====================#
@@ -99,15 +100,13 @@ def render_tab_find():
             st.session_state.temp_suggestions = suggestions
             if len(st.session_state.temp_suggestions) == 0:
                 st.markdown("None found; Try again")
-    
-    
 
     for paper in st.session_state.temp_suggestions:
         st.markdown(f"**{paper['title']}**")
         st.caption(f"{format_authors(paper['authors'])} — {paper['published'][:10] if 'published' in paper else '?'}")
         st.markdown(paper['summary'])
 
-        col1, col2 = st.columns([1, 1])
+        col1, col2 = st.columns([5, 1])
         paper_id = paper.get("id", paper.get("link", hashlib.md5(paper["title"].encode()).hexdigest()))
 
         with col1:
@@ -127,6 +126,8 @@ def render_tab_find():
                     p for p in st.session_state.temp_suggestions if p.get("id") != paper_id
                 ]
                 st.rerun()
+        
+        st.divider()
 
 
 
@@ -141,4 +142,26 @@ def render_tab_paper():
         render_paper_card(paper, summary_cache)
         st.markdown("<hr style='margin: 0.3rem 0;'>", unsafe_allow_html=True)
 
+def render_tab_search():
+    st.subheader("Search for Specific Evidence")
 
+    query = st.text_input("Enter a research question:")
+    top_k = st.slider("How many chunks to consider?", min_value=1, max_value=10, value=3)
+
+    if st.button("Search"):
+        with st.spinner("Searching through saved papers..."):
+            results = search_with_semantic_filter(
+                query, st.session_state.papers, st.session_state.current_project, top_k=top_k
+            )
+
+        if not results:
+            st.warning("No relevant evidence found.")
+            return
+
+        st.markdown("### Extracted Answers")
+        for res in results:
+            st.markdown(f"**{res['paper']['title']}** — Page {res['page']} (score: {res['score']:.2f})")
+            st.markdown(f"**Answer:** {res['answer']}")
+            if "Not found" not in res['answer']:
+                st.caption(res["chunk"][:700] + "..." if len(res["chunk"]) > 700 else res["chunk"])
+            st.divider()
