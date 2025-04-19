@@ -5,22 +5,21 @@ from utils import *
 SUMMARY_FILE = "summary_cache.json"
 
 #==================== Summaries ====================#
-def load_summary_cache():
-    if os.path.exists(SUMMARY_FILE):
-        try:
-            with open(SUMMARY_FILE, "r") as f:
-                cache = json.load(f)
-                if isinstance(cache, dict):
-                    return cache
-        except Exception as e:
-            print("Failed to load summary cache:", e)
+def load_summary_cache(project_name):
+    path = os.path.join(get_project_path(project_name), SUMMARY_FILE)
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return json.load(f)
     return {}
 
-def save_summary_cache(cache):
-    with open(SUMMARY_FILE, "w") as f:
+def save_summary_cache(cache, project_name):
+    os.makedirs(get_project_path(project_name), exist_ok=True)
+    path = os.path.join(get_project_path(project_name), "summary_cache.json")
+    with open(path, "w") as f:
         json.dump(cache, f, indent=2)
 
-def summarize_paper(paper_id, abstract, cache):
+
+def summarize_paper(paper_id, abstract, cache, project_name):
     if paper_id in cache:
         return cache[paper_id]
 
@@ -36,5 +35,5 @@ def summarize_paper(paper_id, abstract, cache):
     keywords = keywords_line.replace("Keywords:", "").strip()
 
     cache[paper_id] = {"summary": summary, "keywords": keywords}
-    save_summary_cache(cache)
+    save_summary_cache(cache, project_name)
     return cache[paper_id]
