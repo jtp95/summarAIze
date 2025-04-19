@@ -1,0 +1,65 @@
+[
+  {
+    "id": "1901.10869",
+    "title": "For an early introduction of quantum mechanics concepts in physics   curriculum",
+    "summary": "In this paper we suggest to anticipate the introduction of concepts such as quantum state and the operators connected to their transformations well in advance of what is usually done.",
+    "authors": "Giovanni Organtini",
+    "published": "2019-01-30T14:51:40Z",
+    "link": "http://arxiv.org/abs/1901.10869v1",
+    "source": "arXiv"
+  },
+  {
+    "title": "Introduction to quantum mechanics - Harvard University",
+    "summary": "PDF-1.2 9 0 obj /Type/Font /Subtype/Type1 /Name/F1 /FontDescriptor 8 0 R /BaseFont/XNCMJA+CMBX12 /FirstChar 33 /LastChar 196 /Widths[342.6 581 937.5 562.5 937.5 875 ...",
+    "authors": "?",
+    "published": "?",
+    "link": "https://davidmorin.physics.fas.harvard.edu/files/2023/11/waves_quantum.pdf",
+    "source": "web",
+    "id": "https://davidmorin.physics.fas.harvard.edu/files/2023/11/waves_quantum.pdf"
+  },
+  {
+    "title": "1 Introduction to quantum mechanics - Stanford University",
+    "summary": "1 Introduction to quantum mechanics Slides: Lecture 1e Science, philosophy and meaning Text reference: Quantum Mechanics for Scientists and Engineers Sections 1.2 - 1.3. Introduction to quantum mechanics Science, philosophy and meaning Quantum mechanics for scientists and engineers David Miller.",
+    "authors": "?",
+    "published": "?",
+    "link": "https://dabm.stanford.edu/wp-content/uploads/2021/12/Lecture_1.pdf",
+    "source": "web",
+    "id": "https://dabm.stanford.edu/wp-content/uploads/2021/12/Lecture_1.pdf"
+  },
+  {
+    "title": "Quantum Theory, Groups and Representations: An Introduction Revised and ...",
+    "summary": "Quantum Theory, Groups and Representations: An Introduction Revised and expanded version, under construction Peter Woit Department of Mathematics, Columbia University woit@math.columbia.edu October 30, 2024",
+    "authors": "?",
+    "published": "?",
+    "link": "https://www.math.columbia.edu/~woit/QM/qmbook.pdf",
+    "source": "web",
+    "id": "https://www.math.columbia.edu/~woit/QM/qmbook.pdf"
+  },
+  {
+    "id": "0507239",
+    "title": "Interpretation of Electron Tunneling from Uncertainty Principle",
+    "summary": "Beginners studying quantum mechanics are often baffled with electron tunneling.Hence an easy approach for comprehension of the topic is presented here on the basis of uncertainty principle.An estimate of the tunneling time is also derived from the same method.",
+    "authors": "Angik Sarkar, T. K. Bhattacharyya",
+    "published": "2005-07-25T17:12:15Z",
+    "link": "http://arxiv.org/abs/quant-ph/0507239v1",
+    "source": "arXiv"
+  },
+  {
+    "id": "2412.12100",
+    "title": "Hawking for beginners",
+    "summary": "Stephen Hawkings most important scientific contribution was his theoretical discovery that black holes aint so black, since they emit thermal radiation as if they were hot bodies with an absolute temperature known as the Hawking temperature. Although this year marks half a century since Hawking made his discovery, it remains unknown to the vast majority of people. In his popular books, Hawking explains the significance of his discovery in a simple way, using the so-called vacuum quantum fluctuations. The aim of this work is to bring Hawking's discovery to the widest possible audience, especially physics teachers. To do this, we will develop a derivation of the Hawking temperature that fairly faithfully translates Hawking's quantum fluctuation model into the mathematical language used by a typical physics teacher, whether in training or in practice.",
+    "authors": "Jorge Pinochet",
+    "published": "2024-11-12T00:52:21Z",
+    "link": "http://arxiv.org/abs/2412.12100v2",
+    "source": "arXiv"
+  },
+  {
+    "id": "0912.2666",
+    "title": "Bohmian Trajectories as the Foundation of Quantum Mechanics",
+    "summary": "Bohmian trajectories have been used for various purposes, including the numerical simulation of the time-dependent Schroedinger equation and the visualization of time-dependent wave functions. We review the purpose they were invented for: to serve as the foundation of quantum mechanics, i.e., to explain quantum mechanics in terms of a theory that is free of paradoxes and allows an understanding that is as clear as that of classical mechanics. Indeed, they succeed in serving that purpose in the context of a theory known as Bohmian mechanics, to which this article is an introduction.",
+    "authors": "Sheldon Goldstein, Roderich Tumulka, Nino Zanghi",
+    "published": "2009-12-14T15:32:54Z",
+    "link": "http://arxiv.org/abs/0912.2666v1",
+    "source": "arXiv"
+  }
+]

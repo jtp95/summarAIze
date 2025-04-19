@@ -70,7 +70,7 @@ def fetch_arxiv_metadata(url):
         summary = entry.summary.replace("\n", " ").strip()
 
         return {
-            "id": arxiv_id,
+            "id": arxiv_id.split('v')[0],
             "title": title,
             "authors": ", ".join(author.name for author in entry.authors),
             "summary": summary,
@@ -100,19 +100,20 @@ def save_papers(papers, project_name):
     path = os.path.join(get_project_path(project_name), "saved_papers.json")
     with open(path, "w") as f:
         json.dump(papers, f, indent=2)
+        
 
 #==================== Llamma Query ====================#
 def run_llama_prompt(prompt, model="llama3"):
     try:
         result = subprocess.run(
-            ["ollama", "run", model],
+            ["ollama", "run", model],  # system prompt reset
             input=prompt.encode(),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
         return result.stdout.decode().strip()
     except Exception as e:
-        return f"Error running LLaMA: {e}"
+        return f"Error: {e}"
 
 #==================== Ollamma Setup ====================#
 

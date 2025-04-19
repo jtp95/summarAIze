@@ -1,0 +1,18 @@
+{
+  "https://dabm.stanford.edu/wp-content/uploads/2021/12/Lecture_1.pdf": {
+    "summary": "This abstract introduces the concept of quantum mechanics, exploring its intersection with science, philosophy, and meaning.",
+    "keywords": "quantum mechanics, science, philosophy, meaning, introduction"
+  },
+  "https://www.math.columbia.edu/~woit/QM/qmbook.pdf": {
+    "summary": "This paper provides an introduction to quantum theory, groups, and representations, exploring the connections between these fundamental concepts in physics.",
+    "keywords": "Quantum Theory, Groups, Representations, Physics"
+  },
+  "1901.10869": {
+    "summary": "The authors propose introducing concepts related to quantum states and their transformation operators earlier than usual in educational settings.",
+    "keywords": "Quantum State, Transformation Operators, Education, Physics"
+  },
+  "0912.2666": {
+    "summary": "Bohmian trajectories were invented to provide a foundation for quantum mechanics that is free of paradoxes and allows for a clear understanding, ultimately serving as the basis for Bohmian mechanics.",
+    "keywords": "Bohmian trajectories, quantum mechanics, Bohmian mechanics"
+  }
+}
