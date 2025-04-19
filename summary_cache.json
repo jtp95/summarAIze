@@ -1,0 +1,14 @@
+{
+  "2103.14030": {
+    "summary": "This paper presents Swin Transformer, a new vision Transformer that serves as a general-purpose backbone for computer vision tasks such as image classification, object detection, and semantic segmentation. The model addresses challenges in adapting Transformers from language to vision by using a hierarchical architecture with shifted windows.",
+    "keywords": "Vision Transformer, Computer Vision, Shifted Windows"
+  },
+  "1706.03762": {
+    "summary": "The Transformer model, a new architecture based solely on attention mechanisms, outperforms existing sequence transduction models on machine translation tasks while being more parallelizable and requiring less training time.",
+    "keywords": "Transformer, attention mechanisms, machine translation, recurrence, convolutional neural networks"
+  },
+  "2504.13181": {
+    "summary": "The Perception Encoder (PE) is a state-of-the-art image and video understanding model trained using simple vision-language learning, achieving strong general embeddings for various downstream tasks without relying on specific pretraining objectives.",
+    "keywords": "Contrastive Vision-Language Training, Image and Video Understanding, Perception Encoder"
+  }
+}
