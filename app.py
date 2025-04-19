@@ -24,20 +24,24 @@ if "last_loaded_project" not in st.session_state:
 if "temp_suggestions" not in st.session_state:
     st.session_state.temp_suggestions = []
 
+button_setup()
+
 # === Project Selection ===
 def clear_temp_suggestions():
     st.session_state.temp_suggestions = []
 
 if not st.session_state.project_selected:
     render_logo()
-    st.title("Select or Create a Project")
-
-    project_list = list_projects()
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns([5,1])
     with col1:
-        selected = st.selectbox("Choose a project:", options=project_list)
+        st.title("Select Project")
+    
+    project_list = list_projects()
+    selected = st.selectbox("Choose a project:", options=project_list)
+    
     with col2:
-        if st.button("Use Project"):
+        st.markdown("<div style='margin-top: 2rem'></div>", unsafe_allow_html=True)
+        if st.button("Select"):
             st.session_state.current_project = selected
             st.session_state.project_selected = True
             st.session_state.last_loaded_project = selected
@@ -47,9 +51,9 @@ if not st.session_state.project_selected:
             clear_temp_suggestions()
             st.rerun()
 
-    st.markdown("---")
+    st.divider()
 
-    st.subheader("Create a New Project")
+    st.subheader("Create New Project")
     with st.form("create_project_form"):
         new_project = st.text_input("Project name")
         create = st.form_submit_button("Create")
@@ -71,6 +75,8 @@ if not st.session_state.project_selected:
             else:
                 st.error("Project name invalid or already exists.")
 
+    st.divider()
+    
     st.subheader("Delete Existing Project")
     with st.form("delete_project_form"):
         to_delete = st.selectbox("Select project to delete", options=project_list)
@@ -93,24 +99,64 @@ if st.session_state.project_selected and st.session_state.current_project:
     summary_cache = load_summary_cache(st.session_state.current_project)
     render_logo()
 
+    # === Detail View ===
     if st.session_state.selected_paper:
         st.components.v1.html('''<script>var body = window.parent.document.querySelector(".main"); body.scrollTop = 0;</script>''')
         paper = st.session_state.selected_paper
         st.title(paper["title"])
-        st.write(f"**Authors:** {paper['authors']}")
-        st.write(f"**Published:** {paper['published']}")
+        
+        col1, col2 = st.columns([5,1])
+        with col1:
+            st.write(f"**Authors:** {paper['authors']}")
+            st.write(f"**Published:** {paper['published']}")
+        with col2:
+            st.button("Back", on_click=lambda: st.session_state.update({"selected_paper": None}))
+        
         st.divider()
         display_summary(paper, summary_cache)
         st.divider()
         st.write(f"**Abstract:** {paper['summary']}")
         st.markdown(f"[View on arXiv]({paper['link']})")
-        st.button("← Go Back", on_click=lambda: st.session_state.update({"selected_paper": None}))
+        
+        st.divider()
+        st.subheader("Citation (APA)")
+        st.code(generate_apa_citation(paper), language="markdown")
+
+        st.divider()
+        st.markdown("Citation Number")
+        new_id = st.number_input(
+            "Edit citation ID",
+            min_value=1,
+            value=paper["citation_id"],
+            step=1,
+            key="edit_citation_id"
+        )
+
+        if new_id != paper["citation_id"]:
+            # Check for conflict
+            if any(p["citation_id"] == new_id for p in st.session_state.papers if p["id"] != paper["id"]):
+                st.warning(f"Citation ID [{new_id}] is already used.")
+            else:
+                # Update
+                paper["citation_id"] = new_id
+                save_papers(st.session_state.papers, st.session_state.current_project)
+                st.success(f"Citation ID updated to [{new_id}]")
+                st.rerun()
+        
+        st.button("Back ", on_click=lambda: st.session_state.update({"selected_paper": None}))
+
         st.stop()
 
-    st.markdown(f"## Project: {st.session_state.current_project}")
+    # === Main View ===
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.markdown(f"## Project: {st.session_state.current_project}")
+    with col2:
+        st.markdown("<div style='margin-top: 0.5rem'></div>", unsafe_allow_html=True)
+        st.button("Exit", on_click=lambda: st.session_state.update({"project_selected": None}))
     config = load_project_config(st.session_state.current_project)
 
-    with st.expander("Project Info", expanded=True):
+    with st.expander("Project Info", expanded=False):
         with st.form("project_metadata_form"):
             title = st.text_input("Project Title", value=config.get("title", ""))
             description = st.text_area("Project Description", value=config.get("description", ""))
@@ -133,63 +179,23 @@ if st.session_state.project_selected and st.session_state.current_project:
                 else:
                     save_project_config(st.session_state.current_project, config)
                     st.success("Project info updated.")
-
-    st.button("← Exit Project", on_click=lambda: st.session_state.update({"project_selected": None}))
-
+    
     tab_paper, tab_find, tab_add = st.tabs(["Papers", "Find", "Add"])
 
     with tab_add:
-        with st.form("add_paper_form"):
-            url = st.text_input("Paste arXiv paper URL:", key="url_input")
-            submitted = st.form_submit_button("Add Paper")
-        if submitted and "arxiv.org/abs" in url:
-            paper = fetch_arxiv_metadata(url)
-            if paper and paper["id"] not in [p["id"] for p in st.session_state.papers]:
-                st.session_state.papers.append(paper)
-                save_papers(st.session_state.papers, st.session_state.current_project)
-                st.success("Paper added.")
-            elif not paper:
-                st.error("Failed to fetch paper metadata.")
-            else:
-                st.info("Paper already added.")
+        render_tab_add()
 
     with tab_find:
-        if st.button("Suggest Papers Based on Project Info"):
-            fresh_config = load_project_config(st.session_state.current_project)
-            with st.spinner("Generating fresh suggestions..."):
-                st.session_state.temp_suggestions = generate_live_suggestions(fresh_config)
-
-        for paper in st.session_state.temp_suggestions:
-            st.markdown(f"**{paper['title']}**")
-            st.caption(f"{format_authors(paper['authors'])} — {paper['published'][:10] if 'published' in paper else '?'}")
-            st.markdown(paper['summary'])
-
-            col1, col2 = st.columns([1, 1])
-            paper_id = paper.get("id", paper.get("link", hashlib.md5(paper["title"].encode()).hexdigest()))
-
-            with col1:
-                if st.button("Accept", key=f"accept_{paper_id}"):
-                    if not any(p["id"] == paper_id for p in st.session_state.papers):
-                        st.session_state.papers.append(paper)
-                        save_papers(st.session_state.papers, st.session_state.current_project)
-                    st.session_state.temp_suggestions = [
-                        p for p in st.session_state.temp_suggestions if p.get("id") != paper_id
-                    ]
-                    st.success("Paper added to saved list.")
-                    st.rerun()
-            
-            with col2:
-                if st.button("Reject", key=f"reject_{paper_id}"):
-                    st.session_state.temp_suggestions = [
-                        p for p in st.session_state.temp_suggestions if p.get("id") != paper_id
-                    ]
-                    st.rerun()
-
+        render_tab_find()
 
     with tab_paper:
-        for paper in st.session_state.papers:
-            render_paper_card(paper, summary_cache)
-            st.divider()
+        with st.expander("APA Citations", expanded=False):
+            for paper in sorted(st.session_state.papers, key=lambda p: p["citation_id"]):
+                citation = generate_apa_citation(paper)
+                st.markdown(f"**[{paper['citation_id']}]** {citation}")
+            
+        detect_citation_gaps(st.session_state.papers)
+        render_tab_paper()
 
     for paper in st.session_state.papers:
         pid = paper["id"]

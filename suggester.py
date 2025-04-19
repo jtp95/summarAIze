@@ -14,12 +14,14 @@ def generate_search_queries_from_project(config):
     title = config.get("title", "")
     desc = config.get("description", "")
     keywords = ", ".join(config.get("keywords", []))
+    additional = config.get("custom_query", "")
 
     prompt = f"""
     You are helping find academic research papers for a project.
     Project Title: {title}
     Project Description: {desc}
     Keywords: {keywords}
+    Additional Query: {additional}
 
     Based on this information, generate 3 to 5 concise search queries that could be used to find relevant papers on arXiv or the web.
     Only output the queries, one per line, no numbering.
@@ -79,15 +81,22 @@ def fetch_web_papers(query, max_results=5):
 
 
 
-def is_semantically_relevant(project_config, paper):
+def is_semantically_relevant(config, paper):
+    title = config.get("title", "")
+    desc = config.get("description", "")
+    keywords = ", ".join(config.get("keywords", []))
+    additional = config.get("custom_query", "")
+    
     prompt = f"""
-    Project: {project_config['title']}
-    Description: {project_config['description']}
+    Project Title: {title}
+    Project Description: {desc}
+    Project Keywords: {keywords}
+    Additional Query: {additional}
 
     Candidate Paper Title: {paper['title']}
     Abstract: {paper['summary']}
 
-    Is this paper directly relevant to introducing fundamental quantum physics (not quantum computing or algorithmic approaches)? Only answer YES or NO.
+    Is this paper directly relevant to given project information and considering additional query requested by the user? Only answer YES or NO.
     """
     result = run_llama_prompt(prompt).lower()
     return "yes" in result
@@ -107,13 +116,13 @@ def generate_live_suggestions(config):
         arxiv = fetch_arxiv_papers(query)
         web = [] #fetch_web_papers(query) # Disabled for now
         papers = arxiv + web
-
+        print(len(papers))
         for paper in papers:
             # Clean up
             paper["title"] = clean_text(paper.get("title", "Untitled"))
             paper["summary"] = clean_text(paper.get("summary", ""))
             paper["authors"] = clean_text(paper.get("authors", "?"))
-
+            print(paper["title"])
             # Generate fallback ID from URL or title hash
             pid = paper.get("id") or paper.get("link") or hashlib.md5(paper["title"].encode()).hexdigest()
             paper["id"] = pid

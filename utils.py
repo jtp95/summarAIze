@@ -5,10 +5,13 @@ import subprocess
 import socket
 import json
 import time
+import streamlit as st
+import datetime
 
 OLLAMA_MODEL = "llama3"
 SAVE_FILE = "saved_papers.json"
 PROJECTS_DIR = "projects"
+
 
 #==================== Projects ====================#
 
@@ -101,6 +104,34 @@ def save_papers(papers, project_name):
     with open(path, "w") as f:
         json.dump(papers, f, indent=2)
         
+def delete_paper_by_id(paper_id, state_key="papers"):
+    papers = st.session_state.get(state_key, [])
+    updated = [p for p in papers if p.get("id") != paper_id]
+    st.session_state[state_key] = updated
+    return updated
+
+def get_next_citation_id(papers):
+    used_ids = sorted(p.get("citation_id") for p in papers if "citation_id" in p)
+    for i in range(1, len(used_ids) + 2):  # +2 so we can go one past max
+        if i not in used_ids:
+            return i
+
+def add_paper_to_session(paper):
+    existing_ids = [p["id"] for p in st.session_state.papers]
+    if paper["id"] in existing_ids:
+        return "duplicate"
+
+    # Assign next citation ID
+    paper["citation_id"] = get_next_citation_id(st.session_state.papers)
+    st.session_state.papers.append(paper)
+    save_papers(st.session_state.papers, st.session_state.current_project)
+    return "added"
+
+def detect_citation_gaps(papers):
+    ids = sorted(p["citation_id"] for p in papers if "citation_id" in p)
+    expected = list(range(1, len(ids) + 1))
+    if ids != expected:
+        st.warning("`Citation IDs have gaps. These will be reused in future additions.`")
 
 #==================== Llamma Query ====================#
 def run_llama_prompt(prompt, model="llama3"):
@@ -163,3 +194,36 @@ def ensure_ollama_and_model():
         pull_model()
     
     return True, "Ollama and model are ready."
+
+#==================== Designs ====================#
+
+def button_setup():
+    button_style = """
+        <style>
+        .stButton > button {
+            width: 100% !important;
+            min-width: 80px;
+            max-width: 100px;
+        }
+        </style>
+    """
+
+    st.markdown(button_style, unsafe_allow_html=True)
+    
+#==================== Citation ====================#
+    
+def generate_apa_citation(paper):
+    try:
+        authors = paper["authors"].split(", ")
+        if len(authors) > 1:
+            author_str = ", ".join(authors[:-1]) + f", & {authors[-1]}"
+        else:
+            author_str = authors[0]
+
+        year = datetime.datetime.strptime(paper["published"], "%Y-%m-%dT%H:%M:%SZ").year
+        title = paper["title"].rstrip(".")
+        link = paper["link"]
+
+        return f"{author_str} ({year}). *{title}*. arXiv. {link}"
+    except Exception as e:
+        return "Failed to generate citation"
