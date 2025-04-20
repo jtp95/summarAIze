@@ -159,6 +159,10 @@ if st.session_state.project_selected and st.session_state.current_project:
                 st.success(f"Citation ID updated to [{new_id}]")
                 st.rerun()
         
+        st.divider()
+        render_paper_notes(paper["id"], st.session_state.current_project)
+        st.divider()
+        
         st.button("Back ", on_click=lambda: st.session_state.update({"selected_paper": None}))
 
         st.stop()

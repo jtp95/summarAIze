@@ -35,6 +35,19 @@ def render_logo():
     st.markdown("""
     <h1 style='font-size:24px; margin-bottom:10px;'><span style='color:#4B8BBE;'>SummarAIze</span></h1>
     """, unsafe_allow_html=True)
+   
+   
+#==================== Note ====================#
+ 
+def render_paper_notes(paper_id, project):
+    notes = load_notes(project)
+    current = notes.get(paper_id, "")
+    st.markdown("**Personal Notes**")
+    new_note = st.text_area("Add or edit notes below:", value=current, height=150)
+    if st.button("Save Notes"):
+        notes[paper_id] = new_note
+        save_notes(notes, project)
+        st.success("Notes saved.")
 
 #==================== Card ====================#
 
@@ -70,6 +83,8 @@ def render_paper_card(paper, summary_cache):
 #==================== Tabs ====================#
 
 def render_tab_add():
+    st.subheader("Add arXiv Papers")
+    
     with st.form("add_paper_form"):
         url = st.text_input("Paste arXiv paper URL:", key="url_input")
         submitted = st.form_submit_button("Add Paper")
@@ -88,7 +103,7 @@ def render_tab_add():
 
 
 def render_tab_find():
-    st.subheader("Find Suggested Sources")
+    st.subheader("Find New Sources")
 
     custom_query = st.text_input("Add a specific query to improve suggestions", key="custom_query")
 
@@ -143,7 +158,7 @@ def render_tab_paper():
         st.markdown("<hr style='margin: 0.3rem 0;'>", unsafe_allow_html=True)
 
 def render_tab_search():
-    st.subheader("Search for Specific Evidence")
+    st.subheader("Search from Saved Papers")
 
     query = st.text_input("Enter a research question:")
     top_k = st.slider("How many chunks to consider?", min_value=1, max_value=10, value=3)

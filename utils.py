@@ -293,3 +293,21 @@ def generate_apa_citation(paper):
         return f"{author_str} ({year}). *{title}*. arXiv. {link}"
     except Exception as e:
         return "Failed to generate citation"
+    
+    
+#==================== Notes ====================#
+
+def get_paper_notes_path(project):
+    return os.path.join("projects", project, "notes.json")
+
+def load_notes(project):
+    path = get_paper_notes_path(project)
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_notes(notes, project):
+    path = get_paper_notes_path(project)
+    with open(path, "w") as f:
+        json.dump(notes, f, indent=2)
